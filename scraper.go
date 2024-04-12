@@ -25,7 +25,10 @@ func main() {
 	c.OnError(func(_ *colly.Response, err error){
 		log.Println("Something went wrong", err)
 	})
-	// c.OnHTML("")
+	c.OnHTML("div.ojoFrF", func(e *colly.HTMLElement){
+		fmt.Println(e)
+		fmt.Println()
+	})
 	c.OnResponse(func(r *colly.Response){
 		fmt.Println("Visited", r.Request.URL)
 	})
