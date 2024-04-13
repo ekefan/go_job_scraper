@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"github.com/gocolly/colly/v2"
+	"github.com/ekefan/go_job_scraper/handler"
 )
 
 // struct to describe the fields for the Job data structure
@@ -43,5 +44,6 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(len(jobPostings))
+	handler.Printenv()
 
 }
