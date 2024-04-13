@@ -6,28 +6,33 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-// a type to describe the fields for the Job type
+// struct to describe the fields for the Job data structure
 type Job struct {
-	jobTitle, jobDetails string
+	JobTitle, JobLink string
+	CompanyName, CompanyLocation string
 }
 
-
-//Callback function to handle OnRequests callbacks to the
-//collector
 
 //The entire programs starts running here
 func main() {
 	c:= colly.NewCollector()
 
+	jobPostings := []Job{}
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
 	c.OnError(func(_ *colly.Response, err error){
-		log.Println("Something went wrong", err)
+		log.Println("Ops this operation was not successful", err)
 	})
 	c.OnHTML("div.ojoFrF", func(e *colly.HTMLElement){
-		fmt.Println(e)
-		fmt.Println()
+		jobPosting := Job{}
+
+		jobPosting.JobLink = e.ChildAttr("a.hyperlink_appearance_undefined", "href")
+		jobPosting.JobTitle = e.ChildText("a.hyperlink_appearance_undefined")
+		jobPosting.CompanyName = e.ChildText("div.VeoRvG")
+		jobPosting.CompanyLocation = e.ChildText("div.nxYYVJ")
+		
+		jobPostings = append(jobPostings, jobPosting)
 	})
 	c.OnResponse(func(r *colly.Response){
 		fmt.Println("Visited", r.Request.URL)
@@ -37,4 +42,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(len(jobPostings))
+
 }
