@@ -44,6 +44,6 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(len(jobPostings))
-	handler.Printenv()
+	handler.RunBotServer()
 
 }
