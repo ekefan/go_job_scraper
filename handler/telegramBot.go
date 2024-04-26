@@ -60,13 +60,17 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 	updateMessage := update.Message
 	if strings.Contains(updateMessage.Text, getJobCommand){
 		jobsDescription := strings.Fields(updateMessage.Text)[1:]
-		scraper.GetJobs(jobsDescription)
-		telegramResponseBody, errTelegram := sendTextToTelegramChat(updateMessage.Chat.Id)
-		if errTelegram != nil {
-			log.Printf("Got error %s sending message to telegram:%s", errTelegram.Error(), telegramResponseBody)
-			} else {
-				log.Printf("successfully distributed to chat id %d", update.Message.Chat.Id)
-			}
+		_, err := sendTextToTelegramChat(updateMessage.Chat.Id, "Getting Jobs...\nHold on")
+		if err != nil {
+			log.Printf("got error %s sending message to telegram", err.Error())
+		}
+		jobs := scraper.GetJobs(jobsDescription)
+		errSendingJobs := sendJobsToTelegramChat(updateMessage.Chat.Id, jobs)
+		if errSendingJobs != nil {
+			log.Printf("Got error sending jobs to telegram:%v", 
+			errSendingJobs.Error())
+		}
+		
 	}
 }
 
@@ -74,11 +78,27 @@ type sendMessageReqBody struct {
 	ChatID int64 `json:"chat_id"`
 	Text string  `json:"text"`
 }
-func sendTextToTelegramChat(chatId int64) (string, error) {
+func sendJobsToTelegramChat(chatId int64, jobs []scraper.Job) (error){
+	// sendTextToTelegramChat(chatId, text)
+	for job := range jobs {
+		text := "test went well"
+		fmt.Printf("%T", job)
+		telegramResponseBody, errTelegram := sendTextToTelegramChat(chatId, text)
+		if errTelegram != nil {
+			log.Printf("Got error %s sending message to telegram:%s", errTelegram.Error(), telegramResponseBody)
+			} else {
+				log.Printf("successfully distributed to chat id %d", chatId)
+			}
+
+
+	}
+	return nil
+}
+func sendTextToTelegramChat(chatId int64, text string) (string, error) {
 	// Create the request body struct
 	reqBody := &sendMessageReqBody{
 		ChatID: chatId,
-		Text: "Welcome Bot Panda",
+		Text: text,
 	}
 	//Create the JSON body from the struct
 	reqBytes, err := json.Marshal(reqBody)

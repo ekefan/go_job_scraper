@@ -14,14 +14,22 @@ type Job struct {
 }
 
 
-
-func GetJobs(searchWords []string){
+func (j *Job) GetJobResponseText() string {
+	jobText := fmt.Sprintf("Job Title: %v\nCompany:%v\nLocated at:%v\nKnow more:%v", 
+	j.JobTitle, 
+	j.CompanyName, 
+	j.CompanyLocation,
+	j.JobLink)
+	return jobText
+}
+func GetJobs(searchWords []string) []Job {
 	//get the url for the jobsearch scrapping
 	usrDescription := strings.Join(searchWords, "+")
 	url := "https://ng.jooble.org/SearchResult?ukw="
 	webURL := fmt.Sprintf("%s%s", url, usrDescription)
 
 	c:= colly.NewCollector()
+
 
 	jobPostings := []Job{}
 	c.OnRequest(func(r *colly.Request) {
@@ -31,8 +39,8 @@ func GetJobs(searchWords []string){
 		log.Println("Ops this operation was not successful", err)
 	})
 	c.OnHTML("div.ojoFrF", func(e *colly.HTMLElement){
+		
 		jobPosting := Job{}
-
 		jobPosting.JobLink = e.ChildAttr("a.hyperlink_appearance_undefined", "href")
 		jobPosting.JobTitle = e.ChildText("a.hyperlink_appearance_undefined")
 		jobPosting.CompanyName = e.ChildText("div.VeoRvG")
@@ -48,6 +56,6 @@ func GetJobs(searchWords []string){
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(len(jobPostings))
+	return jobPostings
 
 }
