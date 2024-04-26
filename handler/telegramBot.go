@@ -65,6 +65,7 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 			log.Printf("got error %s sending message to telegram", err.Error())
 		}
 		jobs := scraper.GetJobs(jobsDescription)
+		fmt.Printf("%T", jobs)
 		errSendingJobs := sendJobsToTelegramChat(updateMessage.Chat.Id, jobs)
 		if errSendingJobs != nil {
 			log.Printf("Got error sending jobs to telegram:%v", 
@@ -80,12 +81,13 @@ type sendMessageReqBody struct {
 }
 func sendJobsToTelegramChat(chatId int64, jobs []scraper.Job) (error){
 	// sendTextToTelegramChat(chatId, text)
-	for job := range jobs {
-		text := "test went well"
-		fmt.Printf("%T", job)
+	for _, job := range jobs {
+		text := job.GetJobResponseText()
+		fmt.Printf("%T\n%v", job, text)
 		telegramResponseBody, errTelegram := sendTextToTelegramChat(chatId, text)
 		if errTelegram != nil {
 			log.Printf("Got error %s sending message to telegram:%s", errTelegram.Error(), telegramResponseBody)
+			return errTelegram
 			} else {
 				log.Printf("successfully distributed to chat id %d", chatId)
 			}
