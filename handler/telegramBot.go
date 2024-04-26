@@ -8,9 +8,12 @@ import (
 	"encoding/json"
 	"errors"
 	"bytes"
+	"github.com/ekefan/go_job_scraper/scraper"
 )
 
+
 const startCommand string = "/start"
+const getJobCommand string = "/getme"
 const telegramApiBaseUrl string = "https://api.telegram.org/bot"
 const telegramApiSendMessage string = "/sendMessage"
 const telegramToken string = "TELEGRAM_BOT_TOKEN"
@@ -22,13 +25,11 @@ type Update struct {
 	UpdateId int     `json:"update_id"`
 	Message  Message `json:"message"`
 }
-
 // Message is a Telegram object that can be found in an update.
 type Message struct {
 	Text     string   `json:"text"`
 	Chat     Chat     `json:"chat"`
 }
-
 // A Telegram Chat indicates the conversation to which the message belongs.
 type Chat struct {
 	Id int64 `json:"id"`
@@ -53,6 +54,8 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("received update")
 	updateMessage := update.Message
 	if updateMessage.Text == startCommand {
+		jobsDescription := []string{"backend", "developer"}
+		scraper.GetJobs(jobsDescription)
 		telegramResponseBody, errTelegram := sendTextToTelegramChat(updateMessage.Chat.Id)
 		if errTelegram != nil {
 			log.Printf("Got error %s sending message to telegram:%s", errTelegram.Error(), telegramResponseBody)
@@ -83,6 +86,7 @@ func sendTextToTelegramChat(chatId int64) (string, error) {
 		return "", err
 	}
 	if res.StatusCode != http.StatusOK {
+		fmt.Println(res.StatusCode)
 		return "", errors.New("unexpected status" + res.Status)
 	}
 

@@ -1,10 +1,10 @@
-package main
+package scraper
 
 import (
 	"fmt"
 	"log"
+	"strings"
 	"github.com/gocolly/colly/v2"
-	"github.com/ekefan/go_job_scraper/handler"
 )
 
 // struct to describe the fields for the Job data structure
@@ -14,8 +14,13 @@ type Job struct {
 }
 
 
-//The entire programs starts running here
-func main() {
+
+func GetJobs(searchWords []string){
+	//get the url for the jobsearch scrapping
+	usrDescription := strings.Join(searchWords, "+")
+	url := "https://ng.jooble.org/SearchResult?ukw="
+	webURL := fmt.Sprintf("%s%s", url, usrDescription)
+
 	c:= colly.NewCollector()
 
 	jobPostings := []Job{}
@@ -39,11 +44,10 @@ func main() {
 		fmt.Println("Visited", r.Request.URL)
 	})
 
-	err := c.Visit("https://ng.jooble.org/SearchResult?ukw=backend+developer")
+	err := c.Visit(webURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(len(jobPostings))
-	handler.RunBotServer()
 
 }
