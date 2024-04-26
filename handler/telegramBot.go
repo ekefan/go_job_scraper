@@ -7,16 +7,21 @@ import (
 	"net/http"
 	"encoding/json"
 	"errors"
+	"strings"
 	"bytes"
 	"github.com/ekefan/go_job_scraper/scraper"
 )
 
 
-const startCommand string = "/start"
-const getJobCommand string = "/getme"
-const telegramApiBaseUrl string = "https://api.telegram.org/bot"
-const telegramApiSendMessage string = "/sendMessage"
-const telegramToken string = "TELEGRAM_BOT_TOKEN"
+const (
+	startCommand string = "/start"
+	getJobCommand string = "/getme"
+	helpCommand string = "/help"
+
+	telegramApiBaseUrl string = "https://api.telegram.org/bot"
+	telegramApiSendMessage string = "/sendMessage"
+	telegramToken string = "TELEGRAM_BOT_TOKEN"
+)
 
 var telegramApi string = telegramApiBaseUrl + os.Getenv(telegramToken) + telegramApiSendMessage
 // Update is a Telegram object that the handler receives every time 
@@ -53,8 +58,8 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("received update")
 	updateMessage := update.Message
-	if updateMessage.Text == startCommand {
-		jobsDescription := []string{"backend", "developer"}
+	if strings.Contains(updateMessage.Text, getJobCommand){
+		jobsDescription := strings.Fields(updateMessage.Text)[1:]
 		scraper.GetJobs(jobsDescription)
 		telegramResponseBody, errTelegram := sendTextToTelegramChat(updateMessage.Chat.Id)
 		if errTelegram != nil {
