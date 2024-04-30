@@ -11,7 +11,10 @@ import (
 	"strings"
 
 	"github.com/ekefan/go_job_scraper/scraper"
+	"github.com/joho/godotenv"
+	
 )
+
 
 const (
 	startCommand  string = "/start"
@@ -46,11 +49,11 @@ type Chat struct {
 // parseTelegramRequest handles incoming update from the Telegram web hook
 func parseTelegramRequest(r *http.Request) (*Update, error) {
 	var update Update
-	fmt.Printf("From line 46 checking what an update looks link\n %v", update)
 	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
 		log.Printf("could not decode incoming update %s", err.Error())
 		return nil, err
 	}
+	fmt.Printf("From line 46 checking what an update looks link\n %v\n", update)
 	return &update, nil
 }
 
@@ -63,7 +66,7 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("received update")
 	updateCommand := strings.Fields(update.Message.Text)[0]
 	updateText := strings.Fields(update.Message.Text)[1:]
-
+	fmt.Println(updateCommand, updateText)
 	switch updateCommand {
 		case getJobCommand:
 			jobsDescription := updateText
@@ -134,7 +137,22 @@ func sendTextToTelegramChat(chatId int64, text string) (string, error) {
 	return reqBody.Text, nil
 }
 
+
+func loadDotEnv() error {
+	err:= godotenv.Load(".env")
+	if err != nil {
+		fmt.Printf("Error loading .env files")
+		return err
+	}
+	return nil
+}
+
 func RunBotServer() {
+	errLoadingEnv := loadDotEnv()
+	if errLoadingEnv != nil {
+		log.Printf("Error loading the env variables")
+		return 
+	}
 	http.ListenAndServe(":3000", http.HandlerFunc(HandleTelegramWebHookTest))
 }
 
