@@ -56,6 +56,6 @@ func GetJobs(searchWords []string) []Job {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return jobPostings
+	return jobPostings //slice containing all job postings from this scraping session
 
 }

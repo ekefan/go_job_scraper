@@ -43,6 +43,7 @@ type Chat struct {
 // parseTelegramRequest handles incoming update from the Telegram web hook
 func parseTelegramRequest(r *http.Request) (*Update, error) {
 	var update Update
+	fmt.Printf("From line 46 checking what an update looks link\n %v", update)
 	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
 		log.Printf("could not decode incoming update %s", err.Error())
 		return nil, err
@@ -58,6 +59,30 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("received update")
 	updateMessage := update.Message
+	updateCommand := strings.Fields(updateMessage.Text)[0]
+	updateText := strings.Fields(updateMessage.Text)[1:]
+	
+	switch updateCommand {
+		case getJobCommand:
+			jobsDescription := updateText
+			_, err := sendTextToTelegramChat(updateMessage.Chat.Id, "Getting Jobs...\nHold on")
+			if err != nil {
+				log.Printf("got error %s sending message to telegram", err.Error())
+			}
+			jobs := scraper.GetJobs(jobsDescription)
+			fmt.Printf("%T", jobs)
+			errSendingJobs := sendJobsToTelegramChat(updateMessage.Chat.Id, jobs)
+			if errSendingJobs != nil {
+				log.Printf("Got error sending jobs to telegram:%v", 
+				errSendingJobs.Error())
+			}
+		// case startCommand:
+		// 	runStartCommand()
+		// case helpCommand:
+		// 	runHelpCommand()
+		// default:
+		// 	runStartCommand()
+	}
 	if strings.Contains(updateMessage.Text, getJobCommand){
 		jobsDescription := strings.Fields(updateMessage.Text)[1:]
 		_, err := sendTextToTelegramChat(updateMessage.Chat.Id, "Getting Jobs...\nHold on")
