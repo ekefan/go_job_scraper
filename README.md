@@ -8,8 +8,17 @@ official Go documentation.
 
 **Job panda** is my first project and I will love see it completed :).
 
-## edited 1 may 2024.
+## readme update.
 The Bot employes a webscraping script to fetch job postings from jooble.com when /getme command is used.
+
+How did I connect my local host to the public internet?
+Ngok (a service that makes my localhost publicly available to the internet) was used to make my local host server public.
+Then created a webhook endpoint to receive post requests for the bot from telegram by:
+
+```
+curl -F "url=<ngroks_url>/webhook" https://api.telegram.org/bot<bot_token>/setWebhook
+```
+
 The main entry of the program runs the bot's http handler
 ```
 package main
@@ -31,14 +40,7 @@ update request.
 following the command, like /getme backend developer jobs
 - Other commands the bot recognizes are /help and /start and basic string responses are sent 
 
-Ngok (a service that makes my localhost publicly available to the internet) was used to make my local host server public.
-Then created a webhook endpoint to receive post requests for the bot from telegram by:
-
-```
-curl -F "url=<ngroks url>/webhoo" https://api.telegram.org/bot<bot_token>/setWebhook
-```
-
 ## After all
 Building the project has help me gain a clearer understanding of golang's syntax and a http server client
 
-`#Building projects till I become proficient from basic to...`   as it gets complex I will know :)
+`#Building projects till I become proficient, from basic to...`
