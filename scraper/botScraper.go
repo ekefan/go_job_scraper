@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"github.com/gocolly/colly/v2"
 )
@@ -27,7 +26,6 @@ func GetJobs(searchWords []string) []Job {
 	usrDescription := strings.Join(searchWords, "+")
 	url := "https://ng.jooble.org/SearchResult?ukw="
 	webURL := fmt.Sprintf("%s%s", url, usrDescription)
-
 	c:= colly.NewCollector()
 
 
@@ -36,7 +34,7 @@ func GetJobs(searchWords []string) []Job {
 		fmt.Println("Visiting", r.URL)
 	})
 	c.OnError(func(_ *colly.Response, err error){
-		log.Println("Ops this operation was not successful", err)
+		fmt.Println("Ops this operation was not successful", err)
 	})
 	c.OnHTML("div.ojoFrF", func(e *colly.HTMLElement){
 		
@@ -54,7 +52,7 @@ func GetJobs(searchWords []string) []Job {
 
 	err := c.Visit(webURL)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	return jobPostings //slice containing all job postings from this scraping session
 
