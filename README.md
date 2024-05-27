@@ -41,6 +41,6 @@ following the command, like /getme backend developer jobs
 - Other commands the bot recognizes are /help and /start and basic string responses are sent 
 
 ## After all
-Building the project has help me gain a clearer understanding of golang's syntax and a http server client
+Building the project has help me gain a clearer understanding of golang's syntax and http server/client
 
 `#Building projects till I become proficient, from basic to...`
