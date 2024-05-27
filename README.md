@@ -31,8 +31,12 @@ update request.
 following the command, like /getme backend developer jobs
 - Other commands the bot recognizes are /help and /start and basic string responses are sent 
 
-To test the functionality of the bot, I used ngok (a service that makes my localhost publicly available to the internet)
-I then curled the URL provided by the ngok to the bots URL so that Updates are received accordingly
+Ngok (a service that makes my localhost publicly available to the internet) was used to make my local host server public.
+Then created a webhook endpoint to receive post requests for the bot from telegram by:
+
+```
+curl -F "url=<ngroks url>/webhoo" https://api.telegram.org/bot<bot_token>/setWebhook
+```
 
 ## After all
 Building the project has help me gain a clearer understanding of golang's syntax and a http server client
