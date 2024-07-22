@@ -25,8 +25,7 @@ const (
 )
 
 // telegramApi uses consts from telegramBotUtils.go
-var telegramApi string = telegramApiBaseUrl + os.Getenv(telegramToken) + telegramApiSendMessage
-
+var telegramApi string 
 var startText string = fmt.Sprintf(
 	"Welcome to Job Panda\n" +
 		"This bot brings to your dm the latest Job postings based on your description from jooble.com" +
@@ -65,8 +64,9 @@ type sendMessageReqBody struct {
 	Text   string `json:"text"`
 }
 
-func loadDotEnv() error {
-	err := godotenv.Load(".env")
+func LoadDotEnv(filename string) error {
+	err := godotenv.Load(filename)
+	
 	if err != nil {
 		fmt.Printf("Error loading .env files")
 		return err
@@ -107,11 +107,10 @@ func sendJobsToTelegramChat(chatId int64, jobs []scraper.Job) error {
 	return nil
 }
 
-/*
-sendTextToTelegramChat handles the functionality of
-sending response messages to the respective chatId(dm)
-*/
+// sendTextToTelegramChat handles the functionality of
+// sending response messages to the respective chatId(dm)
 func sendTextToTelegramChat(chatId int64, text string) (string, error) {
+	
 	// Create the request body struct
 	reqBody := &sendMessageReqBody{
 		ChatID: chatId,
@@ -170,10 +169,6 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunBotServer() {
-	errLoadingEnv := loadDotEnv()
-	if errLoadingEnv != nil {
-		log.Printf("Error loading the env variables")
-		return
-	}
-	http.ListenAndServe(":3000", http.HandlerFunc(HandleTelegramWebHookTest))
+	telegramApi = fmt.Sprintf("%s%v%s", telegramApiBaseUrl, os.Getenv("TELEGRAM_BOT_TOKEN"), telegramApiSendMessage)
+	http.ListenAndServe(":8080", http.HandlerFunc(HandleTelegramWebHookTest))
 }
