@@ -13,7 +13,14 @@ The Bot employes a webscraping script to fetch job postings from jooble.com when
 
 How did I connect my local host to the public internet?
 Ngok (a service that makes my localhost publicly available to the internet) was used to make my local host server public.
-Then created a webhook endpoint to receive post requests for the bot from telegram by:
+```
+sudo snap install ngrok
+```
+- Sign up and get an auth token
+- Run the app: ```go run main.go```
+- Use ngrok to link local server to the web: ```ngrok http 8080```
+
+Then create a webhook endpoint to receive post requests for the bot from telegram by:
 
 ```
 curl -F "url=<ngroks_url>/webhook" https://api.telegram.org/bot<bot_token>/setWebhook
