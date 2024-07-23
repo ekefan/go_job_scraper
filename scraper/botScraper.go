@@ -23,17 +23,19 @@ func (j *Job) GetJobResponseText() string {
 }
 func GetJobs(searchWords []string) []Job {
 	//get the url for the jobsearch scrapping
-	usrDescription := strings.Join(searchWords, "+")
+	usrDescription := strings.Join(searchWords, "%20")
 	url := "https://ng.jooble.org/SearchResult?ukw="
 	webURL := fmt.Sprintf("%s%s", url, usrDescription)
 	c:= colly.NewCollector()
-
+	c.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
 
 	jobPostings := []Job{}
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
+		fmt.Println(r.Headers)
 	})
-	c.OnError(func(_ *colly.Response, err error){
+	c.OnError(func(resp *colly.Response, err error){
+		fmt.Println(resp.Headers)
 		fmt.Println("Ops this operation was not successful", err)
 	})
 	c.OnHTML("div.ojoFrF", func(e *colly.HTMLElement){
