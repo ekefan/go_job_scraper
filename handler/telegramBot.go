@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -25,7 +26,7 @@ const (
 )
 
 // telegramApi uses consts from telegramBotUtils.go
-var telegramApi string 
+var telegramApi string
 var startText string = fmt.Sprintf(
 	"Welcome to Job Panda\n" +
 		"This bot brings to your dm the latest Job postings based on your description from jooble.com" +
@@ -48,15 +49,36 @@ type Update struct {
 	Message  Message `json:"message"`
 }
 
-// Message is a Telegram object that can be found in an update.
 type Message struct {
-	Text string `json:"text"`
-	Chat Chat   `json:"chat"`
+	MessageId int      `json:"message_id"`
+	From      From     `json:"from"`
+	Text      string   `json:"text"`
+	Chat      Chat     `json:"chat"`
+	Date      int      `json:"date"`
+	Entities  []Entity `json:"entities,omitempty"`
 }
 
-// A Telegram Chat indicates the conversation to which the message belongs.
+type From struct {
+	Id           int64  `json:"id"`
+	IsBot        bool   `json:"is_bot"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Username     string `json:"username"`
+	LanguageCode string `json:"language_code"`
+}
+
 type Chat struct {
-	Id int64 `json:"id"`
+	Id        int64  `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Username  string `json:"username"`
+	Type      string `json:"type"`
+}
+
+type Entity struct {
+	Offset int    `json:"offset"`
+	Length int    `json:"length"`
+	Type   string `json:"type"`
 }
 
 type sendMessageReqBody struct {
@@ -66,7 +88,7 @@ type sendMessageReqBody struct {
 
 func LoadDotEnv(filename string) error {
 	err := godotenv.Load(filename)
-	
+
 	if err != nil {
 		fmt.Printf("Error loading .env files")
 		return err
@@ -76,9 +98,16 @@ func LoadDotEnv(filename string) error {
 
 // parseTelegramRequest handles incoming update from the Telegram web hook
 func parseTelegramRequest(r *http.Request) (*Update, error) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("could not read request body: %s", err.Error())
+		return nil, err
+	}
+	defer r.Body.Close()
+	// log.Printf("Raw request body: %s", string(body))
 	var update Update
-	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
-		log.Printf("could not decode incoming update %s", err.Error())
+	if err := json.Unmarshal(body, &update); err != nil {
+		log.Printf("could not decode incoming update: %s", err.Error())
 		return nil, err
 	}
 	return &update, nil
@@ -110,7 +139,7 @@ func sendJobsToTelegramChat(chatId int64, jobs []scraper.Job) error {
 // sendTextToTelegramChat handles the functionality of
 // sending response messages to the respective chatId(dm)
 func sendTextToTelegramChat(chatId int64, text string) (string, error) {
-	
+
 	// Create the request body struct
 	reqBody := &sendMessageReqBody{
 		ChatID: chatId,
@@ -137,10 +166,16 @@ func sendTextToTelegramChat(chatId int64, text string) (string, error) {
 
 // HandleTelegramWebHookTest: main http handler for the telegram bot
 func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
-	update, err := parseTelegramRequest(r) //func from telegramBotUtils.go
+	update, err := parseTelegramRequest(r)
 	if err != nil {
 		log.Printf("Error parsing update, %s", err.Error())
+		http.Error(w, "could not parse update", http.StatusInternalServerError)
 		return
+	}
+	log.Printf("Received update: %+v", update)
+
+	if update.Message.Text == "" {
+		fmt.Println(*update)
 	}
 	updateCommand := strings.Fields(update.Message.Text)[0]
 	updateText := strings.Fields(update.Message.Text)[1:]
@@ -152,12 +187,10 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 		if len(jobs) != 0 {
 			errSendingJobs := sendJobsToTelegramChat(update.Message.Chat.Id, jobs)
 			if errSendingJobs != nil {
-				log.Printf("Got error sending jobs to telegram:%v",
-					errSendingJobs.Error())
+				log.Printf("Got error sending jobs to telegram: %v", errSendingJobs.Error())
 			}
 		} else {
-			sendToTelegram(update.Message.Chat.Id, 
-			"Sorry no Jobs matched your description\n Maybe try refining the description")
+			sendToTelegram(update.Message.Chat.Id, "Sorry no Jobs matched your description\n Maybe try refining the description")
 		}
 	case startCommand:
 		sendToTelegram(update.Message.Chat.Id, startText)
@@ -170,5 +203,7 @@ func HandleTelegramWebHookTest(w http.ResponseWriter, r *http.Request) {
 
 func RunBotServer() {
 	telegramApi = fmt.Sprintf("%s%v%s", telegramApiBaseUrl, os.Getenv("TELEGRAM_BOT_TOKEN"), telegramApiSendMessage)
+	fmt.Println("listening")
 	http.ListenAndServe(":8080", http.HandlerFunc(HandleTelegramWebHookTest))
+
 }
