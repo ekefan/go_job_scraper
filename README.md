@@ -50,4 +50,11 @@ following the command, like /getme backend developer jobs
 ## After all
 Building the project has help me gain a clearer understanding of golang's syntax and http server/client
 
-`#Building projects till I become proficient, from basic to...`
+## Readme update: 23 Jul
+I noticed some recent updates to the bots policies on wwww.ng.jooble.com, the application can no longer function.
+But it was a simple telegram bot to get job listings from jooble.com. It was amazing to see that I could arrange some texts to do somethings.
+The bot had the following commands:
+- /start: which introduced the application, a brief manual and the other two commands that could be used with the bot
+- /getme `job description`: initiated a backend process that formed a url based on the job description, fed the url to the scraper, received and sent the result back to the chat
+- /help: a command that displayed the brief manual and it displayed it anytime, the bot did not understand the users command input
+
